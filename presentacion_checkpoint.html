@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkpoint: Generador Sintáctico</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top right, #1e1b4b, var(--bg-color));
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Nav & Hero */
+        header {
+            padding: 4rem 2rem;
+            text-align: center;
+            background: linear-gradient(to bottom, rgba(15, 23, 42, 0.9), transparent);
+        }
+        
+        h1 { font-size: 3.5rem; font-weight: 800; margin-bottom: 1rem; background: linear-gradient(to right, var(--accent-green), var(--accent-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { font-size: 1.2rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 2rem; }
+        .badge { display: inline-block; padding: 0.5rem 1rem; background: rgba(16, 185, 129, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); border-radius: 9999px; font-weight: 600; font-size: 0.9rem; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .glass-panel:hover { transform: translateY(-5px); }
+
+        h2 { font-size: 2rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; }
+
+        /* Kanban Board */
+        .kanban-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .kanban-col {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border);
+        }
+        .col-header { font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; }
+        .col-header.done span { color: var(--accent-green); }
+        .col-header.prog span { color: var(--accent-blue); }
+        .col-header.todo span { color: #f59e0b; }
+        
+        .task-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .task-card:hover { border-color: rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.08); }
+        .task-card strong { color: var(--accent-blue); display: block; margin-bottom: 0.3rem; }
+
+        /* Architecture Flow */
+        .flow-container { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem; }
+        .flow-step { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); padding: 1rem 1.5rem; border-radius: 8px; font-weight: 600; text-align: center; }
+        .flow-arrow { color: var(--text-muted); font-weight: bold; }
+
+        /* Code Preview */
+        .code-window {
+            background: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            border: 1px solid #333;
+        }
+        .code-header { background: #2d2d2d; padding: 0.5rem 1rem; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid #1e1e1e; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot.r { background: #ff5f56; } .dot.y { background: #ffbd2e; } .dot.g { background: #27c93f; }
+        .code-title { color: #888; font-size: 0.8rem; margin-left: auto; }
+        .code-content { padding: 1.5rem; color: #d4d4d4; overflow-x: auto; white-space: pre; }
+        .kw { color: #569cd6; } .cmt { color: #6a9955; } .str { color: #ce9178; } .fn { color: #dcdcaa; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="badge">UVG - Diseño de Lenguajes M3</div>
+        <h1>Generador de Analizadores Sintácticos</h1>
+        <p class="subtitle">Checkpoint Semana 17: Arquitectura, Scaffolding y Planificación LR(0).</p>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Presentado por: <strong>Milton Polanco (23471)</strong></p>
+    </header>
+
+    <div class="container">
+        
+        <!-- KANBAN BOARD -->
+        <div class="glass-panel">
+            <h2>Gestión de Tareas (Kanban)</h2>
+            Este documento refleja la gestión visual de las tareas actuales, evidenciando el estado del trabajo en el Checkpoint de la Semana 17.
+            <div class="kanban-grid">
+                
+                <div class="kanban-col">
+                    <div class="col-header done">Completado (M2) <span>✓</span></div>
+                    <div class="task-card"><strong>Árbol Sintáctico (AST)</strong>Cálculo de firstpos, lastpos y anulabilidad.</div>
+                    <div class="task-card"><strong>Direct DFA</strong>Algoritmo que calcula el autómata mínimo.</div>
+                    <div class="task-card"><strong>Code Generator</strong>Output funcional que genera lexer.py.</div>
+                </div>
+
+                <div class="kanban-col">
+                    <div class="col-header prog">En Curso (Scaffolding) <span>↻</span></div>
+                    <div class="task-card"><strong>Arquitectura LR(0)</strong>Definir responsabilidades y flujo de datos hacia las tablas ACTION/GOTO.</div>
+                    <div class="task-card"><strong>Scaffolding JS</strong>Crear estructura de carpetas (parser_generator/) y plantillas base de algoritmos.</div>
+                </div>
+
+                <div class="kanban-col">
+                    <div class="col-header todo">Por Hacer (Siguientes Pasos) <span>○</span></div>
+                    <div class="task-card"><strong>Lector YAPar</strong>Procesar el archivo .yalp y extraer %token.</div>
+                    <div class="task-card"><strong>Algoritmo Closure & Goto</strong>Calcular estados LR(0) iterativamente.</div>
+                    <div class="task-card"><strong>Generador de Tablas</strong>Poblar matrices ACTION y GOTO y reportar conflictos.</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ARQUITECTURA -->
+        <div class="glass-panel">
+            <h2>Arquitectura y Flujo de Integración</h2>
+            <p style="margin-bottom: 1.5rem; color: var(--text-muted);">El generador Sintáctico actuará como pipeline secuencial, procesando los tokens identificados previamente por la fase léxica y armando el Autómata Finito Determinista basado en conjuntos LR(0).</p>
+            
+            <div class="flow-container">
+                <div class="flow-step" style="background: rgba(59, 130, 246, 0.1); border-color: var(--accent-blue);">lexer.py<br><span style="font-size: 0.8rem; font-weight: normal;">(Fase M2)</span></div>
+                <div class="flow-arrow">➜ getToken() ➜</div>
+                <div class="flow-step">GrammarReader<br><span style="font-size: 0.8rem; font-weight: normal;">(Lee YAPar)</span></div>
+                <div class="flow-arrow">➜</div>
+                <div class="flow-step">LR0 Automaton<br><span style="font-size: 0.8rem; font-weight: normal;">(Closure/Goto)</span></div>
+                <div class="flow-arrow">➜</div>
+                <div class="flow-step">ParserGenerator<br><span style="font-size: 0.8rem; font-weight: normal;">(Tablas ACTION/GOTO)</span></div>
+            </div>
+        </div>
+
+        <!-- CODIGO PREVIEW -->
+        <div class="glass-panel">
+            <h2>Evidencia de Scaffolding</h2>
+            <p style="margin-bottom: 1.5rem; color: var(--text-muted);">Las bases de las clases generadoras ya están implementadas, asegurando un diseño modular orientado a objetos en Node.js.</p>
+            
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+                    <div class="code-title">parser_generator/GrammarReader.js</div>
+                </div>
+                <div class="code-content"><span class="cmt">/**
+ * Módulo responsable de procesar la sintaxis del archivo .yalp (YACC format).
+ * Responsabilidades:
+ * 1. Extraer tokens (%token) e ignorados (IGNORE).
+ * 2. Procesar comentarios en bloque y separar secciones con '%%'.
+ */</span>
+
+<span class="kw">class</span> GrammarReader {
+    <span class="fn">constructor</span>(filePath) {
+        <span class="kw">this</span>.filePath = filePath;
+        <span class="kw">this</span>.tokens = [];
+        <span class="kw">this</span>.productions = [];
+    }
+
+    <span class="cmt">// TODO: Implementar lector de archivo línea por línea YAPar</span>
+    <span class="fn">parse</span>() {
+        <span class="kw">throw new</span> Error(<span class="str">"Not implemented yet"</span>);
+    }
+}</div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
