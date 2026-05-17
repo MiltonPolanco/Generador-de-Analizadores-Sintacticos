@@ -113,7 +113,7 @@
     <header>
         <div class="badge">UVG - Diseño de Lenguajes M3</div>
         <h1>Generador de Analizadores Sintácticos</h1>
-        <p class="subtitle">Checkpoint Semana 17: Arquitectura, Scaffolding y Planificación LR(0).</p>
+        <p class="subtitle">Checkpoint Semana 18: Lógica Core del Parser (FIRST/FOLLOW, Closure, Goto).</p>
         <p style="color: var(--text-muted); font-size: 0.9rem;">Presentado por: <strong>Milton Polanco (23471)</strong></p>
     </header>
 
@@ -122,27 +122,26 @@
         <!-- KANBAN BOARD -->
         <div class="glass-panel">
             <h2>Gestión de Tareas (Kanban)</h2>
-            Este documento refleja la gestión visual de las tareas actuales, evidenciando el estado del trabajo en el Checkpoint de la Semana 17.
+            Este documento refleja la gestión visual de las tareas actuales, evidenciando el estado del trabajo en el Checkpoint de la Semana 18 y nuestra meta final.
             <div class="kanban-grid">
                 
                 <div class="kanban-col">
-                    <div class="col-header done">Completado (M2) <span>✓</span></div>
-                    <div class="task-card"><strong>Árbol Sintáctico (AST)</strong>Cálculo de firstpos, lastpos y anulabilidad.</div>
-                    <div class="task-card"><strong>Direct DFA</strong>Algoritmo que calcula el autómata mínimo.</div>
-                    <div class="task-card"><strong>Code Generator</strong>Output funcional que genera lexer.py.</div>
+                    <div class="col-header done">Completado (Semana 18) <span>✓</span></div>
+                    <div class="task-card"><strong>Grammar Reader</strong>Lógica base para extraer terminales y no terminales.</div>
+                    <div class="task-card"><strong>FIRST & FOLLOW</strong>Algoritmos predictivos completados.</div>
+                    <div class="task-card"><strong>Autómata LR(0)</strong>Operaciones Closure y Goto implementadas.</div>
                 </div>
 
                 <div class="kanban-col">
-                    <div class="col-header prog">En Curso (Scaffolding) <span>↻</span></div>
-                    <div class="task-card"><strong>Arquitectura LR(0)</strong>Definir responsabilidades y flujo de datos hacia las tablas ACTION/GOTO.</div>
-                    <div class="task-card"><strong>Scaffolding JS</strong>Crear estructura de carpetas (parser_generator/) y plantillas base de algoritmos.</div>
+                    <div class="col-header prog">En Curso <span>↻</span></div>
+                    <div class="task-card"><strong>Integración YAPar</strong>Procesar el archivo .yalp real para conectarlo a la lógica.</div>
+                    <div class="task-card"><strong>Construcción DFA</strong>Unir todos los estados mediante Goto(I, X).</div>
                 </div>
 
                 <div class="kanban-col">
                     <div class="col-header todo">Por Hacer (Siguientes Pasos) <span>○</span></div>
-                    <div class="task-card"><strong>Lector YAPar</strong>Procesar el archivo .yalp y extraer %token.</div>
-                    <div class="task-card"><strong>Algoritmo Closure & Goto</strong>Calcular estados LR(0) iterativamente.</div>
-                    <div class="task-card"><strong>Generador de Tablas</strong>Poblar matrices ACTION y GOTO y reportar conflictos.</div>
+                    <div class="task-card"><strong>Parser SLR(1)</strong>Generar Action/Goto table con base en LR(0) + FOLLOW.</div>
+                    <div class="task-card"><strong>Parser LALR(1)</strong>Merge de estados LR(1) con core similar para el analizador final.</div>
                 </div>
 
             </div>
@@ -166,31 +165,31 @@
 
         <!-- CODIGO PREVIEW -->
         <div class="glass-panel">
-            <h2>Evidencia de Scaffolding</h2>
-            <p style="margin-bottom: 1.5rem; color: var(--text-muted);">Las bases de las clases generadoras ya están implementadas, asegurando un diseño modular orientado a objetos en Node.js.</p>
+            <h2>Evidencia de Ejecución</h2>
+            <p style="margin-bottom: 1.5rem; color: var(--text-muted);">Las bases algorítmicas están funcionales. A continuación un extracto de nuestra lógica de extracción y cálculo.</p>
             
             <div class="code-window">
                 <div class="code-header">
                     <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
-                    <div class="code-title">parser_generator/GrammarReader.js</div>
+                    <div class="code-title">parser_generator/FirstAndFollow.js</div>
                 </div>
                 <div class="code-content"><span class="cmt">/**
- * Módulo responsable de procesar la sintaxis del archivo .yalp (YACC format).
- * Responsabilidades:
- * 1. Extraer tokens (%token) e ignorados (IGNORE).
- * 2. Procesar comentarios en bloque y separar secciones con '%%'.
+ * Cálculo iterativo de conjuntos FIRST y FOLLOW para la resolución de conflictos.
+ * Fundamental para el generador SLR.
  */</span>
 
-<span class="kw">class</span> GrammarReader {
-    <span class="fn">constructor</span>(filePath) {
-        <span class="kw">this</span>.filePath = filePath;
-        <span class="kw">this</span>.tokens = [];
-        <span class="kw">this</span>.productions = [];
-    }
-
-    <span class="cmt">// TODO: Implementar lector de archivo línea por línea YAPar</span>
-    <span class="fn">parse</span>() {
-        <span class="kw">throw new</span> Error(<span class="str">"Not implemented yet"</span>);
+<span class="kw">class</span> FirstAndFollow {
+    <span class="fn">computeFirstSets</span>() {
+        <span class="kw">let</span> changed = <span class="kw">true</span>;
+        <span class="kw">while</span> (changed) {
+            changed = <span class="kw">false</span>;
+            <span class="kw">this</span>.productions.forEach(prod => {
+                <span class="cmt">// Lógica de propagación de Firsts...</span>
+                <span class="kw">if</span> (<span class="kw">this</span>.firstSets.get(head).size > beforeSize) {
+                    changed = <span class="kw">true</span>;
+                }
+            });
+        }
     }
 }</div>
             </div>
