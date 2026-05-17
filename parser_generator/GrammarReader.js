@@ -13,21 +13,55 @@
  */
 
 class GrammarReader {
-    constructor(filePath) {
-        this.filePath = filePath;
-        this.tokens = [];
+    constructor() {
+        this.terminals = new Set();
+        this.nonTerminals = new Set();
         this.productions = [];
         this.startSymbol = null;
     }
 
-    // TODO: Implementar lector de archivo línea por línea
-    parse() {
-        throw new Error("Not implemented yet");
+    /**
+     * Construye el modelo interno a partir de una estructura de producciones JSON.
+     * En una fase posterior, el lector del archivo .yalp llamará a esta función.
+     * @param {Array} rawProductions Array de formato { head: "E", body: ["E", "+", "T"] }
+     * @param {String} startSymbol Símbolo inicial (opcional, por defecto el primero)
+     */
+    buildFromStructure(rawProductions, startSymbol = null) {
+        if (!rawProductions || rawProductions.length === 0) {
+            throw new Error("No productions provided.");
+        }
+        
+        this.productions = rawProductions;
+        this.startSymbol = startSymbol || rawProductions[0].head;
+
+        // Fase 1: Identificar todos los No Terminales (lados izquierdos)
+        rawProductions.forEach(prod => {
+            this.nonTerminals.add(prod.head);
+        });
+
+        // Fase 2: Todo símbolo en el cuerpo que no sea No Terminal, es Terminal
+        rawProductions.forEach(prod => {
+            prod.body.forEach(symbol => {
+                // 'ε' o 'epsilon' es la cadena vacía, no es terminal
+                if (!this.nonTerminals.has(symbol) && symbol !== 'ε') {
+                    this.terminals.add(symbol);
+                }
+            });
+        });
+        
+        // Agregar un símbolo especial de fin de cadena (Augmented Grammar)
+        if (!this.terminals.has('$')) {
+            this.terminals.add('$');
+        }
     }
 
-    // TODO: Exponer getter del modelo interno de la gramática
     getGrammar() {
-        return { tokens: this.tokens, productions: this.productions, startSymbol: this.startSymbol };
+        return {
+            terminals: Array.from(this.terminals),
+            nonTerminals: Array.from(this.nonTerminals),
+            productions: this.productions,
+            startSymbol: this.startSymbol
+        };
     }
 }
 
