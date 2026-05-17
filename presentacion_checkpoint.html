@@ -184,7 +184,23 @@
         <span class="kw">while</span> (changed) {
             changed = <span class="kw">false</span>;
             <span class="kw">this</span>.productions.forEach(prod => {
-                <span class="cmt">// Lógica de propagación de Firsts...</span>
+                <span class="kw">const</span> head = prod.head;
+                <span class="kw">const</span> body = prod.body;
+                <span class="kw">const</span> beforeSize = <span class="kw">this</span>.firstSets.get(head).size;
+
+                <span class="cmt">// Propagacion de terminales y epsilons</span>
+                <span class="kw">let</span> allEpsilon = <span class="kw">true</span>;
+                <span class="kw">for</span> (<span class="kw">let</span> i = 0; i < body.length; i++) {
+                    <span class="kw">const</span> symbolFirst = <span class="kw">this</span>.firstSets.get(body[i]) || <span class="kw">new</span> Set();
+                    symbolFirst.forEach(item => {
+                        <span class="kw">if</span> (item !== <span class="str">'ε'</span>) <span class="kw">this</span>.firstSets.get(head).add(item);
+                    });
+                    <span class="kw">if</span> (!symbolFirst.has(<span class="str">'ε'</span>)) {
+                        allEpsilon = <span class="kw">false</span>;
+                        <span class="kw">break</span>;
+                    }
+                }
+                
                 <span class="kw">if</span> (<span class="kw">this</span>.firstSets.get(head).size > beforeSize) {
                     changed = <span class="kw">true</span>;
                 }
