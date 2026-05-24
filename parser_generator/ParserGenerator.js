@@ -13,17 +13,18 @@
  */
 
 class ParserGenerator {
-    constructor(automaton, grammar, sets) {
+    constructor(automaton, grammar, sets, mode = 'SLR') {
         this.automaton = automaton;
         this.grammar = grammar;
         this.sets = sets;
+        this.mode = mode;
         this.actionTable = [];
         this.gotoTable = [];
         this.conflicts = [];
     }
 
     /**
-     * Construye las tablas ACTION y GOTO para el parser SLR(1)
+     * Construye las tablas ACTION y GOTO para el parser SLR(1) o LALR(1)
      */
     buildTables() {
         const { states, transitions } = this.automaton.getAutomaton();
@@ -53,17 +54,22 @@ class ParserGenerator {
                     if (prod.head === this.grammar.startSymbol) {
                         this.actionTable[i]['$'] = 'ACC';
                     } else {
-                        const followA = this.sets.follow.get(prod.head);
-                        if (followA) {
-                            followA.forEach(term => {
-                                const existing = this.actionTable[i][term];
-                                if (existing && existing !== 'R' + item.prodIndex) {
-                                    this.conflicts.push(`Conflict at state ${i} on '${term}': ${existing} vs R${item.prodIndex}`);
-                                } else {
-                                    this.actionTable[i][term] = 'R' + item.prodIndex;
-                                }
-                            });
+                        let reduceSymbols = [];
+                        if (this.mode === 'LALR') {
+                            reduceSymbols = item.lookaheads || [];
+                        } else {
+                            const followA = this.sets.follow.get(prod.head);
+                            reduceSymbols = followA ? Array.from(followA) : [];
                         }
+
+                        reduceSymbols.forEach(term => {
+                            const existing = this.actionTable[i][term];
+                            if (existing && existing !== 'R' + item.prodIndex) {
+                                this.conflicts.push(`Conflict at state ${i} on '${term}': ${existing} vs R${item.prodIndex}`);
+                            } else {
+                                this.actionTable[i][term] = 'R' + item.prodIndex;
+                            }
+                        });
                     }
                 }
             });

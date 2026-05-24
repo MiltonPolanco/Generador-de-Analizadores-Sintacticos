@@ -36,44 +36,68 @@ sets.follow.forEach((val, key) => console.log(`  FOLLOW(${key}) = { ${Array.from
 
 const ParserGenerator = require('./parser_generator/ParserGenerator');
 
-// 3. Prueba de LR0Automaton (Closure y Goto)
-console.log("\n[AUTOMATA LR(0)]");
+// 3. Prueba de LR0Automaton (SLR)
+console.log("\n[AUTOMATA LR(0) / SLR]");
 const lr0 = new LR0Automaton(grammar);
 lr0.build();
 
-const automaton = lr0.getAutomaton();
-console.log(`Estados generados: ${automaton.states.length}`);
-console.log(`Transiciones: ${automaton.transitions.length}`);
+const automatonSLR = lr0.getAutomaton();
+console.log(`Estados generados: ${automatonSLR.states.length}`);
+console.log(`Transiciones: ${automatonSLR.transitions.length}`);
 
 // 4. Prueba de ParserGenerator (Tablas SLR(1))
 console.log("\n[TABLAS SLR(1)]");
-const parserGen = new ParserGenerator(lr0, grammar, sets);
-parserGen.buildTables();
-const tables = parserGen.getTables();
+const parserGenSLR = new ParserGenerator(lr0, grammar, sets, 'SLR');
+parserGenSLR.buildTables();
+const tablesSLR = parserGenSLR.getTables();
 
 console.log("Tabla ACTION:");
-tables.action.forEach((row, i) => {
+tablesSLR.action.forEach((row, i) => {
     if (Object.keys(row).length > 0) {
         console.log(`  Estado ${i}:`, row);
     }
 });
 
-console.log("\nTabla GOTO:");
-tables.goto.forEach((row, i) => {
-    if (Object.keys(row).length > 0) {
-        console.log(`  Estado ${i}:`, row);
-    }
-});
-
-if (tables.conflicts.length > 0) {
-    console.log("\nConflictos detectados:");
-    tables.conflicts.forEach(c => console.log(`  - ${c}`));
+if (tablesSLR.conflicts.length > 0) {
+    console.log("\nConflictos detectados (SLR):");
+    tablesSLR.conflicts.forEach(c => console.log(`  - ${c}`));
 } else {
-    console.log("\nConflictos detectados: 0");
+    console.log("\nConflictos detectados (SLR): 0");
 }
 
-// 5. Emisión del archivo Python
+// 5. Prueba de LALRAutomaton
+const LALRAutomaton = require('./parser_generator/LALRAutomaton');
+console.log("\n[AUTOMATA LALR(1)]");
+const lalr = new LALRAutomaton(grammar, sets);
+lalr.build();
+
+const automatonLALR = lalr.getAutomaton();
+console.log(`Estados generados tras fusionar núcleos: ${automatonLALR.states.length}`);
+console.log(`Transiciones LALR: ${automatonLALR.transitions.length}`);
+
+// 6. Prueba de ParserGenerator (Tablas LALR(1))
+console.log("\n[TABLAS LALR(1)]");
+const parserGenLALR = new ParserGenerator(lalr, grammar, sets, 'LALR');
+parserGenLALR.buildTables();
+const tablesLALR = parserGenLALR.getTables();
+
+console.log("Tabla ACTION LALR:");
+tablesLALR.action.forEach((row, i) => {
+    if (Object.keys(row).length > 0) {
+        console.log(`  Estado ${i}:`, row);
+    }
+});
+
+if (tablesLALR.conflicts.length > 0) {
+    console.log("\nConflictos detectados (LALR):");
+    tablesLALR.conflicts.forEach(c => console.log(`  - ${c}`));
+} else {
+    console.log("\nConflictos detectados (LALR): 0");
+}
+
+// 7. Emisión de archivos Python
 console.log("\n[GENERACION DE CODIGO]");
-parserGen.generateParserFile('parser.py');
+parserGenSLR.generateParserFile('parser_slr.py');
+parserGenLALR.generateParserFile('parser_lalr.py');
 
 
