@@ -13,27 +13,74 @@
  */
 
 class ParserGenerator {
-    constructor(automaton, grammar) {
+    constructor(automaton, grammar, sets) {
         this.automaton = automaton;
         this.grammar = grammar;
+        this.sets = sets;
         this.actionTable = [];
         this.gotoTable = [];
         this.conflicts = [];
     }
 
-    // TODO: Implementar construcción de tablas ACTION y GOTO
+    /**
+     * Construye las tablas ACTION y GOTO para el parser SLR(1)
+     */
     buildTables() {
-        throw new Error("Not implemented yet");
+        const { states, transitions } = this.automaton.getAutomaton();
+
+        // Inicializar tablas
+        states.forEach(() => {
+            this.actionTable.push({});
+            this.gotoTable.push({});
+        });
+
+        // 1. Procesar transiciones (Shift y Goto)
+        transitions.forEach(t => {
+            if (this.grammar.terminals.includes(t.symbol)) {
+                this.actionTable[t.from][t.symbol] = 'S' + t.to;
+            } else if (this.grammar.nonTerminals.includes(t.symbol)) {
+                this.gotoTable[t.from][t.symbol] = t.to;
+            }
+        });
+
+        // 2. Procesar reducciones (Reduce y Accept)
+        states.forEach((stateItems, i) => {
+            stateItems.forEach(item => {
+                const prod = this.grammar.productions[item.prodIndex];
+                
+                // Si el punto está al final (A -> alpha .)
+                if (item.dotPos === prod.body.length || (prod.body.length === 1 && prod.body[0] === 'epsilon')) {
+                    if (prod.head === this.grammar.startSymbol) {
+                        this.actionTable[i]['$'] = 'ACC';
+                    } else {
+                        const followA = this.sets.follow.get(prod.head);
+                        if (followA) {
+                            followA.forEach(term => {
+                                const existing = this.actionTable[i][term];
+                                if (existing && existing !== 'R' + item.prodIndex) {
+                                    this.conflicts.push(`Conflict at state ${i} on '${term}': ${existing} vs R${item.prodIndex}`);
+                                } else {
+                                    this.actionTable[i][term] = 'R' + item.prodIndex;
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+        });
     }
 
-    // TODO: Implementar detección de conflictos
-    detectConflicts() {
-        throw new Error("Not implemented yet");
+    getTables() {
+        return {
+            action: this.actionTable,
+            goto: this.gotoTable,
+            conflicts: this.conflicts
+        };
     }
 
     // TODO: Emitir el archivo parser.py basado en plantilla
     generateParserFile(outputPath) {
-        throw new Error("Not implemented yet");
+        throw new Error("Not implemented yet (To be done in Python integration)");
     }
 }
 
