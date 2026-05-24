@@ -82,10 +82,51 @@ class LR0Automaton {
         return this.closure(gotoItems);
     }
 
-    // TODO: Construir estados (Colección canónica)
+    hashItems(items) {
+        return items.map(i => `${i.prodIndex},${i.dotPos}`).sort().join('|');
+    }
+
+    /**
+     * Construye la Colección Canónica de estados LR(0) y sus transiciones
+     */
     build() {
-        // La implementación completa de build() se hará en la siguiente fase (Week 19)
-        console.log("Building states... (To be implemented)");
+        const initialItem = [{ prodIndex: 0, dotPos: 0 }];
+        const I0 = this.closure(initialItem);
+        
+        this.states = [I0];
+        const stateMap = new Map();
+        stateMap.set(this.hashItems(I0), 0);
+        
+        const symbols = [...this.grammar.terminals, ...this.grammar.nonTerminals];
+
+        let i = 0;
+        while (i < this.states.length) {
+            const currentState = this.states[i];
+            
+            symbols.forEach(symbol => {
+                const nextStateItems = this.goto(currentState, symbol);
+                
+                if (nextStateItems.length > 0) {
+                    const hash = this.hashItems(nextStateItems);
+                    let targetStateIndex;
+
+                    if (!stateMap.has(hash)) {
+                        targetStateIndex = this.states.length;
+                        this.states.push(nextStateItems);
+                        stateMap.set(hash, targetStateIndex);
+                    } else {
+                        targetStateIndex = stateMap.get(hash);
+                    }
+                    
+                    this.transitions.push({
+                        from: i,
+                        symbol: symbol,
+                        to: targetStateIndex
+                    });
+                }
+            });
+            i++;
+        }
     }
 
     getAutomaton() {
