@@ -72,3 +72,8 @@ if (tables.conflicts.length > 0) {
     console.log("\nConflictos detectados: 0");
 }
 
+// 5. Emisión del archivo Python
+console.log("\n[GENERACION DE CODIGO]");
+parserGen.generateParserFile('parser.py');
+
+
