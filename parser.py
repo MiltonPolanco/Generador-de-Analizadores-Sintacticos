@@ -132,7 +132,7 @@ class ParserSLR1:
 
 if __name__ == "__main__":
     # Prueba del algoritmo Shift-Reduce
-    test_input = "c d" # Cambiar segun gramatica de prueba
+    test_input = "c d d" # Cambiar segun gramatica de prueba
     print(f"Parseando cadena: {test_input}")
     tokens = get_tokens(test_input)
     parser = ParserSLR1()
