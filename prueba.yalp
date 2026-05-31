@@ -1,0 +1,24 @@
+/*
+ * prueba.yalp
+ * Gramática de prueba para calculadora simple
+ */
+
+%token INT_LIT
+%token PLUS MINUS TIMES DIV
+
+IGNORE WS
+
+%%
+
+E: E PLUS T  { return args[0] + args[2] }
+ | E MINUS T { return args[0] - args[2] }
+ | T         { return args[0] }
+ ;
+
+T: T TIMES F { return args[0] * args[2] }
+ | T DIV F   { return args[0] / args[2] }
+ | F         { return args[0] }
+ ;
+
+F: INT_LIT   { return args[0] }
+ ;
