@@ -1,0 +1,41 @@
+digraph "Automata SLR YAPar" {
+    rankdir=LR;
+    node [shape=record, fontname="Courier New", fontsize=10];
+
+    I0 [label="{ Estado 0 | E' &rarr; • E\nE &rarr; • E PLUS T\nE &rarr; • E MINUS T\nE &rarr; • T\nT &rarr; • T TIMES F\nT &rarr; • T DIV F\nT &rarr; • F\nF &rarr; • INT_LIT }"];
+    I1 [label="{ Estado 1 | F &rarr; INT_LIT • }"];
+    I2 [label="{ Estado 2 | E' &rarr; E •\nE &rarr; E • PLUS T\nE &rarr; E • MINUS T }"];
+    I3 [label="{ Estado 3 | E &rarr; T •\nT &rarr; T • TIMES F\nT &rarr; T • DIV F }"];
+    I4 [label="{ Estado 4 | T &rarr; F • }"];
+    I5 [label="{ Estado 5 | E &rarr; E PLUS • T\nT &rarr; • T TIMES F\nT &rarr; • T DIV F\nT &rarr; • F\nF &rarr; • INT_LIT }"];
+    I6 [label="{ Estado 6 | E &rarr; E MINUS • T\nT &rarr; • T TIMES F\nT &rarr; • T DIV F\nT &rarr; • F\nF &rarr; • INT_LIT }"];
+    I7 [label="{ Estado 7 | T &rarr; T TIMES • F\nF &rarr; • INT_LIT }"];
+    I8 [label="{ Estado 8 | T &rarr; T DIV • F\nF &rarr; • INT_LIT }"];
+    I9 [label="{ Estado 9 | E &rarr; E PLUS T •\nT &rarr; T • TIMES F\nT &rarr; T • DIV F }"];
+    I10 [label="{ Estado 10 | E &rarr; E MINUS T •\nT &rarr; T • TIMES F\nT &rarr; T • DIV F }"];
+    I11 [label="{ Estado 11 | T &rarr; T TIMES F • }"];
+    I12 [label="{ Estado 12 | T &rarr; T DIV F • }"];
+
+    I0 -> I1 [label="INT_LIT"];
+    I0 -> I2 [label="E"];
+    I0 -> I3 [label="T"];
+    I0 -> I4 [label="F"];
+    I2 -> I5 [label="PLUS"];
+    I2 -> I6 [label="MINUS"];
+    I3 -> I7 [label="TIMES"];
+    I3 -> I8 [label="DIV"];
+    I5 -> I1 [label="INT_LIT"];
+    I5 -> I9 [label="T"];
+    I5 -> I4 [label="F"];
+    I6 -> I1 [label="INT_LIT"];
+    I6 -> I10 [label="T"];
+    I6 -> I4 [label="F"];
+    I7 -> I1 [label="INT_LIT"];
+    I7 -> I11 [label="F"];
+    I8 -> I1 [label="INT_LIT"];
+    I8 -> I12 [label="F"];
+    I9 -> I7 [label="TIMES"];
+    I9 -> I8 [label="DIV"];
+    I10 -> I7 [label="TIMES"];
+    I10 -> I8 [label="DIV"];
+}
