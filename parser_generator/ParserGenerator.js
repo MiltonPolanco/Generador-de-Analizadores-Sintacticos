@@ -69,7 +69,7 @@ class ParserGenerator {
         };
     }
 
-    generateParserFile(outputPath) {
+    generateParserFile(outputPath, lexerModule = 'thelexer') {
         const fs = require('fs');
         const actionTableStr = JSON.stringify(this.actionTable, null, 4);
         const gotoTableStr = JSON.stringify(this.gotoTable, null, 4);
@@ -95,7 +95,7 @@ class ParserGenerator {
 import sys
 
 try:
-    from thelexer import tokenize as _tokenize
+    from ${lexerModule} import tokenize as _tokenize
     
     def get_tokens(text):
         tokens_list = _tokenize(text)
